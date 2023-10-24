@@ -1,3 +1,11 @@
+import { TodosList } from './components/TodosList/TodosList';
+import { AddTodo } from './components/AddTodo/AddTodo';
+
 export const App = () => {
-  return <div>Hello, world!</div>;
+  return (
+    <div>
+      <AddTodo />
+      <TodosList />
+    </div>
+  );
 };
