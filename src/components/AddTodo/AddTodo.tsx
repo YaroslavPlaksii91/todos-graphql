@@ -4,26 +4,20 @@ import { useMutation } from '@apollo/client';
 import { ADD_TODO, ALL_TODOS } from '../../apollo/todos';
 import { TodoType } from '../TodosList/types';
 
-type CacheDataType = {
-  todos: {
-    data: TodoType[];
-  };
-};
-
 export const AddTodo: FC = () => {
   const [value, setValue] = useState('');
   const [addTodo, { error }] = useMutation(ADD_TODO, {
     update(cache, { data: { newTodo } }) {
       const { todos } = cache.readQuery({
         query: ALL_TODOS,
-      }) as CacheDataType;
+      }) as {
+        todos: TodoType[];
+      };
 
       cache.writeQuery({
         query: ALL_TODOS,
         data: {
-          todos: {
-            data: [newTodo, ...todos.data],
-          },
+          todos: [newTodo, ...todos],
         },
       });
     },
@@ -33,10 +27,8 @@ export const AddTodo: FC = () => {
     if (value.trim().length) {
       addTodo({
         variables: {
-          input: {
-            title: value,
-            completed: false,
-          },
+          title: value,
+          completed: false,
         },
       });
       setValue('');
