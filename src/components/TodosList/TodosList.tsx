@@ -9,15 +9,15 @@ import styles from './TodoList.module.css';
 export const TodosList: FC = () => {
   const { loading, error, data } = useQuery(ALL_TODOS);
   const [toggleTodo, { error: updateError }] = useMutation(UPDATE_TODO);
-  const [removeTodo, { error: deleteError }] = useMutation(DELETE_TODO, {
-    update(cache, { data: deleteTodo }) {
+  const [deleteTodo, { error: deleteError }] = useMutation(DELETE_TODO, {
+    update(cache, { data: { removeTodo } }) {
       cache.modify({
         fields: {
-          todos(currentTodos = {}) {
-            const filteredTodos = currentTodos.data.filter(
-              todo => todo.__ref !== `Todo:${deleteTodo.id}`,
+          allTodos(currentTodos = []) {
+            return currentTodos.filter(
+              (todo: { __ref: string }) =>
+                todo.__ref !== `Todo:${removeTodo.id}`,
             );
-            return { data: filteredTodos };
           },
         },
       });
@@ -28,17 +28,7 @@ export const TodosList: FC = () => {
     toggleTodo({
       variables: {
         id,
-        input: {
-          completed: !completed,
-        },
-      },
-      optimisticResponse: {
-        __typename: 'Mutation',
-        updateTodo: {
-          __typename: 'Todo',
-          id,
-          completed: !completed,
-        },
+        completed: !completed,
       },
     });
   };
@@ -54,7 +44,7 @@ export const TodosList: FC = () => {
   return (
     <div>
       <ul className={styles.list}>
-        {data.todos.data.map((todo: TodoType) => (
+        {data.todos.map((todo: TodoType) => (
           <li key={todo.id} className={styles.item}>
             <label>
               <input
@@ -67,7 +57,7 @@ export const TodosList: FC = () => {
             <button
               type="button"
               onClick={() =>
-                removeTodo({
+                deleteTodo({
                   variables: {
                     id: todo.id,
                   },
